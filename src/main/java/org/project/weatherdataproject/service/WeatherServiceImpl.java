@@ -31,7 +31,7 @@ public class WeatherServiceImpl implements WeatherService{
     }
 
     @Override
-    public WeatherResponseDTO findWeatherDataByCity(String city) {
+    public WeatherResponseDTO findWeatherDataByCity(String city) throws  WeatherCityDataNotFoundException{
 
         Weather weather=weatherRepository.findByCity(city);
         if(weather==null)

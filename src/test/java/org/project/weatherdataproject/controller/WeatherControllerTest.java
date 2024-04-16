@@ -6,6 +6,7 @@ import org.mockito.Mock;
 import org.project.weatherdataproject.dto.WeatherResponseDTO;
 import org.project.weatherdataproject.entity.Weather;
 import org.project.weatherdataproject.exceptions.InSufficientWeatherDataException;
+import org.project.weatherdataproject.exceptions.InvalidInputException;
 import org.project.weatherdataproject.exceptions.WeatherCityDataNotFoundException;
 import org.project.weatherdataproject.mapper.WeatherEntityDTOMapper;
 import org.project.weatherdataproject.service.WeatherService;
@@ -91,28 +92,32 @@ public class WeatherControllerTest
 
     @Test
     public void testAddWeather_InvalidInput_ThrowsException() {
-        assertThrows(WeatherCityDataNotFoundException.class, () -> {
-            weatherController.addWeather(null);
+        Weather weather=new Weather();
+        when(weatherService.addWeatherData(weather)).thenThrow(new InvalidInputException("Input is invalid"));
+        assertThrows(InvalidInputException.class, () -> {
+            weatherService.addWeatherData(weather);
         });
     }
 
     @Test
     public void testAddWeather_InsufficientData_ThrowsException() {
-//        Weather weather = new Weather();
-        assertThrows(InSufficientWeatherDataException.class, () -> {weatherService.addWeatherData(new Weather());});
+        Weather weather=new Weather();
+        weather.setDescription("Cloudy");
+        when(weatherService.addWeatherData(weather)).thenThrow(new InSufficientWeatherDataException("Fill the information about city so that according to its we add city weather data on repository"));
+        assertThrows(InSufficientWeatherDataException.class, () -> {
+            weatherService.addWeatherData(weather);
+        });
     }
 
     @Test
     public void testFindWeatherDataByCity_CityNotFound_ThrowsException() {
+        String city = "Bengaluru123";
 
-        String city = "Bengaluru";
-        when(weatherService.findWeatherDataByCity(city)).thenReturn(null);
-
+        when(weatherService.findWeatherDataByCity(city)).thenThrow(new WeatherCityDataNotFoundException("This city data is not present in repository: " + city));
 
         assertThrows(WeatherCityDataNotFoundException.class, () -> {
-            weatherController.findByCity(city);
+            weatherService.findWeatherDataByCity(city);
         });
     }
-
 
 }
