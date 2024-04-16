@@ -17,19 +17,19 @@ public class WeatherControllerExceptionHandler
     }
 
     @ExceptionHandler(InvalidInputException.class)
-    public ResponseEntity handleInvalidInputException(InvalidInputException pe){
+    public ResponseEntity<ExceptionResponseDto> handleInvalidInputException(InvalidInputException pe) {
         ExceptionResponseDto exceptionResponseDTO = new ExceptionResponseDto(
                 pe.getMessage(),
-                400
+                HttpStatus.BAD_REQUEST.value()
         );
         return new ResponseEntity<>(exceptionResponseDTO, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(InSufficientWeatherDataException.class)
-    public ResponseEntity handleInSufficientDataException(InvalidInputException pe){
+    public ResponseEntity<ExceptionResponseDto> handleInSufficientDataException(InSufficientWeatherDataException pe) {
         ExceptionResponseDto exceptionResponseDTO = new ExceptionResponseDto(
                 pe.getMessage(),
-                400
+                HttpStatus.BAD_REQUEST.value()
         );
         return new ResponseEntity<>(exceptionResponseDTO, HttpStatus.BAD_REQUEST);
     }

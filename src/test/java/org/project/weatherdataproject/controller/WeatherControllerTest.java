@@ -5,6 +5,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.project.weatherdataproject.dto.WeatherResponseDTO;
 import org.project.weatherdataproject.entity.Weather;
+import org.project.weatherdataproject.exceptions.InSufficientWeatherDataException;
+import org.project.weatherdataproject.exceptions.WeatherCityDataNotFoundException;
 import org.project.weatherdataproject.mapper.WeatherEntityDTOMapper;
 import org.project.weatherdataproject.service.WeatherService;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -12,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 import static org.mockito.Mockito.when;
@@ -85,4 +88,31 @@ public class WeatherControllerTest
         assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
        verify(weatherService, times(1)).deleteWeatherData(city);
     }
+
+    @Test
+    public void testAddWeather_InvalidInput_ThrowsException() {
+        assertThrows(WeatherCityDataNotFoundException.class, () -> {
+            weatherController.addWeather(null);
+        });
+    }
+
+    @Test
+    public void testAddWeather_InsufficientData_ThrowsException() {
+//        Weather weather = new Weather();
+        assertThrows(InSufficientWeatherDataException.class, () -> {weatherService.addWeatherData(new Weather());});
+    }
+
+    @Test
+    public void testFindWeatherDataByCity_CityNotFound_ThrowsException() {
+
+        String city = "Bengaluru";
+        when(weatherService.findWeatherDataByCity(city)).thenReturn(null);
+
+
+        assertThrows(WeatherCityDataNotFoundException.class, () -> {
+            weatherController.findByCity(city);
+        });
+    }
+
+
 }

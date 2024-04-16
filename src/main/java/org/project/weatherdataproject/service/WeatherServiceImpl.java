@@ -17,7 +17,7 @@ public class WeatherServiceImpl implements WeatherService{
     @Autowired
     private WeatherRepository weatherRepository;
     @Override
-    public WeatherResponseDTO addWeatherData(Weather weather) throws RuntimeException{
+    public WeatherResponseDTO addWeatherData(Weather weather) throws RuntimeException {
         if(weather==null)
         {
             throw new WeatherCityDataNotFoundException("Input is invalid");
