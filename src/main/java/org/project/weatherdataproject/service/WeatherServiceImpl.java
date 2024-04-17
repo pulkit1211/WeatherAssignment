@@ -2,7 +2,9 @@ package org.project.weatherdataproject.service;
 
 import org.project.weatherdataproject.dto.WeatherResponseDTO;
 import org.project.weatherdataproject.entity.Weather;
+import org.project.weatherdataproject.exceptions.CityDataAlreadyExists;
 import org.project.weatherdataproject.exceptions.InSufficientWeatherDataException;
+import org.project.weatherdataproject.exceptions.InvalidInputException;
 import org.project.weatherdataproject.exceptions.WeatherCityDataNotFoundException;
 import org.project.weatherdataproject.mapper.WeatherEntityDTOMapper;
 import org.project.weatherdataproject.repository.WeatherRepository;
@@ -17,10 +19,15 @@ public class WeatherServiceImpl implements WeatherService{
     @Autowired
     private WeatherRepository weatherRepository;
     @Override
-    public WeatherResponseDTO addWeatherData(Weather weather) throws RuntimeException {
+    public WeatherResponseDTO addWeatherData(Weather weather) throws InvalidInputException {
         if(weather==null)
         {
-            throw new WeatherCityDataNotFoundException("Input is invalid");
+            throw new InvalidInputException("Input is invalid");
+        }
+        Weather weather1=(weatherRepository.findByCity(weather.getCity()));
+        if(weather1!=null)
+        {
+            throw new CityDataAlreadyExists("City data already exists");
         }
         if(weather.getCity()==null )
         {

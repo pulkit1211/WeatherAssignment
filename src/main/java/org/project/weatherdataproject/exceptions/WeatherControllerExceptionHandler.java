@@ -33,4 +33,11 @@ public class WeatherControllerExceptionHandler
         );
         return new ResponseEntity<>(exceptionResponseDTO, HttpStatus.BAD_REQUEST);
     }
+
+    @ExceptionHandler(CityDataAlreadyExists.class)
+    public ResponseEntity<ExceptionResponseDto> handleWeatherCityDataAlreadyExists(CityDataAlreadyExists ce)
+    {
+        ExceptionResponseDto exceptionResponseDto=new ExceptionResponseDto(ce.getMessage(),HttpStatus.NOT_ACCEPTABLE.value());
+        return  new ResponseEntity<>(exceptionResponseDto,HttpStatus.NOT_ACCEPTABLE);
+    }
 }

@@ -14,6 +14,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
@@ -88,6 +91,35 @@ public class WeatherControllerTest
 
         assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
        verify(weatherService, times(1)).deleteWeatherData(city);
+    }
+
+    @Test
+    public void testGetAllWeatherData()
+    {
+        List<WeatherResponseDTO> weatherResponseDTOList=new ArrayList<>();
+        WeatherResponseDTO weatherResponseDTO1=new WeatherResponseDTO();
+        weatherResponseDTO1.setCity("Jaipur");
+        weatherResponseDTO1.setTemperature(30L);
+        weatherResponseDTO1.setHumidity(60L);
+        weatherResponseDTO1.setWind(40L);
+        weatherResponseDTO1.setDescription("Clear");
+
+        WeatherResponseDTO weatherResponseDTO2=new WeatherResponseDTO();
+        weatherResponseDTO2.setCity("Mumbai");
+        weatherResponseDTO2.setTemperature(40L);
+        weatherResponseDTO2.setHumidity(60L);
+        weatherResponseDTO2.setWind(70L);
+        weatherResponseDTO2.setDescription("Sunny");
+
+        weatherResponseDTOList.add(weatherResponseDTO1);
+        weatherResponseDTOList.add(weatherResponseDTO2);
+
+        when(weatherService.getAllData()).thenReturn(weatherResponseDTOList);
+        ResponseEntity response = weatherController.getAllWeatherData();
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+
+
     }
 
     @Test
