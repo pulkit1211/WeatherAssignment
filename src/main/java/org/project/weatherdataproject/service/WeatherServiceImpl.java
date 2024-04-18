@@ -2,6 +2,7 @@ package org.project.weatherdataproject.service;
 
 import org.project.weatherdataproject.dto.WeatherResponseDTO;
 import org.project.weatherdataproject.entity.Weather;
+import org.project.weatherdataproject.exceptions.CityDataAlreadyExists;
 import org.project.weatherdataproject.exceptions.InSufficientWeatherDataException;
 import org.project.weatherdataproject.exceptions.WeatherCityDataNotFoundException;
 import org.project.weatherdataproject.mapper.WeatherEntityDTOMapper;
@@ -25,6 +26,10 @@ public class WeatherServiceImpl implements WeatherService{
         if(weather.getCity()==null )
         {
             throw new InSufficientWeatherDataException("Fill the information about city so that according to its we add city weather data on repository");
+        }
+        if(weatherRepository.findByCity(weather.getCity())!=null)
+        {
+            throw new CityDataAlreadyExists("City data already exists");
         }
         weatherRepository.save(weather);
         return WeatherEntityDTOMapper.convertWeatherEntityToWeatherResponseDTO(weather);
@@ -60,12 +65,16 @@ public class WeatherServiceImpl implements WeatherService{
     public WeatherResponseDTO updateWeatherData(String city, Weather weather) {
 
 
-        if( weatherRepository.findByCity(city)==null)
+        Weather w1=weatherRepository.findByCity(city);
+        if(w1==null)
         {
              throw new WeatherCityDataNotFoundException("City weather data not found so it cannot be updated");
         }
-        weatherRepository.update(weather,city);
-
+        w1.setCity(weather.getCity());
+        w1.setTemperature(weather.getTemperature());
+        w1.setHumidity(weather.getHumidity());
+        w1.setWind(weather.getWind());
+        w1.setDescription(weather.getDescription());
 
         return WeatherEntityDTOMapper.convertWeatherEntityToWeatherResponseDTO(weather);
     }
@@ -76,7 +85,7 @@ public class WeatherServiceImpl implements WeatherService{
         {
             throw new WeatherCityDataNotFoundException("City weather data not found in repository ");
         }
-        weatherRepository.delete(city);
+        weatherRepository.deleteByCity(city);
         return true;
     }
 }
