@@ -1,91 +1,184 @@
 package org.project.weatherdataproject.service;
 
-import org.project.weatherdataproject.dto.WeatherResponseDTO;
+import org.project.weatherdataproject.Dtos.WeatherDataResponseDTO;
+import org.project.weatherdataproject.Dtos.WeatherResponseDTO;
 import org.project.weatherdataproject.entity.Weather;
-import org.project.weatherdataproject.exceptions.CityDataAlreadyExists;
-import org.project.weatherdataproject.exceptions.InSufficientWeatherDataException;
-import org.project.weatherdataproject.exceptions.WeatherCityDataNotFoundException;
+import org.project.weatherdataproject.entity.WeatherData;
+import org.project.weatherdataproject.exceptions.*;
 import org.project.weatherdataproject.mapper.WeatherEntityDTOMapper;
 import org.project.weatherdataproject.repository.WeatherRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-@Service
-public class WeatherServiceImpl implements WeatherService{
+import java.util.*;
 
+@Service
+public class WeatherServiceImpl implements WeatherService {
     @Autowired
     private WeatherRepository weatherRepository;
+
     @Override
-    public WeatherResponseDTO addWeatherData(Weather weather) throws RuntimeException {
+    public List<WeatherResponseDTO> getAllWeather()
+    {
+       List<Weather> weather=weatherRepository.findAll();
+       List<WeatherResponseDTO> weatherResponseDTOList=new ArrayList<>();
+       for(Weather weather1:weather)
+       {
+           weatherResponseDTOList.add(WeatherEntityDTOMapper.convertWeatherToWeatherResponseDTO(weather1));
+       }
+       return weatherResponseDTOList;
+    }
+
+    @Override
+    public WeatherResponseDTO getWeatherById(String id)
+    {
+        Optional<Weather> optionalWeather= weatherRepository.findById(id);
+        if(optionalWeather.isEmpty())
+        {
+            throw new WeatherCityDataNotPresent("Weather data is not present with this id:- "+id);
+        }
+        return WeatherEntityDTOMapper.convertWeatherToWeatherResponseDTO(optionalWeather.get());
+
+    }
+
+    @Override
+    public WeatherResponseDTO saveWeather(Weather weather) throws CityDataAlreadyExists
+    {
+        if(weather.getId()==null)
+        {
+            throw new IdWeatherNotExists("Id not be null so put Id pls");
+        }
+        if(weather.getCity()==null)
+        {
+            throw new WeatherCityDataNotPresent("City cannot be null");
+        }
+        Weather weather1=weatherRepository.findWeatherByCity(weather.getCity());
+        if(weather1!=null)
+        {
+            throw  new CityDataAlreadyExists("City data already exists");
+        }
+        Weather w2=weatherRepository.save(weather);
+        return WeatherEntityDTOMapper.convertWeatherToWeatherResponseDTO(w2);
+    }
+
+    @Override
+    public void deleteWeather(String id) {
+        Optional<Weather> weather=weatherRepository.findById(id);
+        if(weather.isEmpty())
+        {
+            throw new IdWeatherNotExists("Weather is not exists with this ID so it can be deleted");
+        }
+        weatherRepository.deleteById(id);
+    }
+
+    @Override
+    public WeatherResponseDTO addWeatherData(String city, WeatherData weatherData) throws IDWeatherDataExists,WeatherCityDataNotFound,WeatherDataWithDateExists{
+        Weather weather = weatherRepository.findWeatherByCity(city);
         if(weather==null)
         {
-            throw new WeatherCityDataNotFoundException("Input is invalid");
+            throw new WeatherCityDataNotPresent("Data of city not exists in DB");
         }
-        if(weather.getCity()==null )
-        {
-            throw new InSufficientWeatherDataException("Fill the information about city so that according to its we add city weather data on repository");
-        }
-        if(weatherRepository.findByCity(weather.getCity())!=null)
-        {
-            throw new CityDataAlreadyExists("City data already exists");
-        }
-        weatherRepository.save(weather);
-        return WeatherEntityDTOMapper.convertWeatherEntityToWeatherResponseDTO(weather);
+         List<WeatherData> weatherDataList=weather.getWeatherData();
+         for(WeatherData weatherData1:weatherDataList)
+         {
+             if(weatherData1.getId().equals(weatherData.getId()))
+             {
+                 throw new IDWeatherDataExists("Id should be unique");
+             }
+             if(weatherData1.getDate().equals(weatherData.getDate()))
+             {
+                 throw new WeatherDataWithDateExists("Weather data with this date already exists");
+             }
+         }
+            weather.getWeatherData().add(weatherData);
+
+            Weather w1= weatherRepository.save(weather);
+            return WeatherEntityDTOMapper.convertWeatherToWeatherResponseDTO(w1);
+
     }
 
     @Override
-    public WeatherResponseDTO findWeatherDataByCity(String city) throws  WeatherCityDataNotFoundException{
-
-        Weather weather=weatherRepository.findByCity(city);
+    public List<WeatherDataResponseDTO> findALlWeatherByCity(String city)
+    {
+        Weather weather=weatherRepository.findWeatherByCity(city);
         if(weather==null)
         {
-            throw  new WeatherCityDataNotFoundException("This city data is not present in repository: "+city);
+            throw new WeatherCityDataNotFound("No data found for this city"+city);
         }
-        return WeatherEntityDTOMapper.convertWeatherEntityToWeatherResponseDTO(weather);
+        List<WeatherDataResponseDTO> weatherDataResponseDTOS=new ArrayList<>();
+        for(WeatherData data:weather.getWeatherData())
+        {
+            weatherDataResponseDTOS.add(WeatherEntityDTOMapper.convertWeatherDataToWeatherDataResponseDTO(data));
+        }
+        return weatherDataResponseDTOS;
     }
 
     @Override
-    public List<WeatherResponseDTO> getAllData() {
-        List<Weather> weatherList=weatherRepository.findAll();
-        if(weatherList==null)
+    public List<WeatherDataResponseDTO> findWeatherWithinRange(String city, Date startDate, Date endDate)
+    {
+        Weather weather=weatherRepository.findWeatherByCity(city);
+        if(weather==null)
         {
-            throw new WeatherCityDataNotFoundException("Data not found");
+            throw new RuntimeException("No data found from this city");
         }
-        List<WeatherResponseDTO> responseDTOList=new ArrayList<>();
-        for(Weather weather:weatherList)
+        List<WeatherData> weatherDataList=new ArrayList<>();
+        for(WeatherData weatherData:weather.getWeatherData())
         {
-            responseDTOList.add(WeatherEntityDTOMapper.convertWeatherEntityToWeatherResponseDTO(weather));
+            Date dataDate = weatherData.getDate();
+            if (dataDate.after(startDate) && dataDate.before(endDate)) {
+                weatherDataList.add(weatherData);
+            }
         }
-        return responseDTOList;
+        List<WeatherDataResponseDTO> weatherDataResponseDTOList=new ArrayList<>();
+        for(WeatherData weatherData:weatherDataList)
+        {
+            weatherDataResponseDTOList.add(WeatherEntityDTOMapper.convertWeatherDataToWeatherDataResponseDTO(weatherData));
+        }
+        return  weatherDataResponseDTOList;
     }
 
     @Override
-    public WeatherResponseDTO updateWeatherData(String city, Weather weather) {
-
-
-        Weather w1=weatherRepository.findByCity(city);
-        if(w1==null)
+    public List<WeatherDataResponseDTO> filterSortTheData(String city, String sortBy, String order)
+    {
+        Weather weather=weatherRepository.findWeatherByCity(city);
+        if(weather==null)
         {
-             throw new WeatherCityDataNotFoundException("City weather data not found so it cannot be updated");
+            throw  new RuntimeException("Data not found ");
         }
-        w1.setCity(weather.getCity());
-        w1.setTemperature(weather.getTemperature());
-        w1.setHumidity(weather.getHumidity());
-        w1.setWind(weather.getWind());
-        w1.setDescription(weather.getDescription());
-
-        return WeatherEntityDTOMapper.convertWeatherEntityToWeatherResponseDTO(weather);
-    }
-
-    @Override
-    public boolean deleteWeatherData(String city) {
-        if( weatherRepository.findByCity(city)==null)
+        List<WeatherData> data=weather.getWeatherData();
+        if(data==null)
         {
-            throw new WeatherCityDataNotFoundException("City weather data not found in repository ");
+            throw  new RuntimeException("Weather data is empty");
         }
-        weatherRepository.deleteByCity(city);
-        return true;
+        if(sortBy!=null)
+        {
+            switch (sortBy)
+            {
+                case "temperature":
+                    Collections.sort(data,(a,b)->Long.compare(a.getTemperature(),b.getTemperature()));
+                    break;
+
+                case "humidity":
+                    Collections.sort(data,(a,b)->Long.compare(a.getHumidity(), b.getHumidity()));
+                    break;
+
+                case "wind":
+                    Collections.sort(data,(a,b)->Long.compare(a.getWind(), b.getWind()));
+
+                default:
+                    throw new RuntimeException("Required params is not found");
+
+            }
+        }
+        if(order.equalsIgnoreCase("DESC"))
+        {
+            Collections.reverse(data);
+        }
+        List<WeatherDataResponseDTO> weatherDataResponseDTOS=new ArrayList<>();
+        for(WeatherData weatherData:data)
+        {
+            weatherDataResponseDTOS.add(WeatherEntityDTOMapper.convertWeatherDataToWeatherDataResponseDTO(weatherData));
+        }
+        return  weatherDataResponseDTOS;
     }
 }

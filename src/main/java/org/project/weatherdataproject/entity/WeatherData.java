@@ -3,20 +3,21 @@ package org.project.weatherdataproject.entity;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Date;
 
-@Document
+
 @Getter
 @Setter
-public class Weather {
+@Document
+public class WeatherData {
 
     @Id
     private String id;
-    private String city;
-
-    private List<WeatherData> weatherData=new ArrayList<>() ;
+    private Long temperature;
+    private Long humidity;
+    private Long wind;
+    private String description;
+    private Date date;
 }

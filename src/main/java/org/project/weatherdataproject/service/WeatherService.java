@@ -1,23 +1,33 @@
 package org.project.weatherdataproject.service;
 
-import org.project.weatherdataproject.dto.WeatherResponseDTO;
+import org.project.weatherdataproject.Dtos.WeatherDataResponseDTO;
+import org.project.weatherdataproject.Dtos.WeatherResponseDTO;
 import org.project.weatherdataproject.entity.Weather;
-import org.project.weatherdataproject.exceptions.InSufficientWeatherDataException;
-import org.project.weatherdataproject.exceptions.WeatherCityDataNotFoundException;
-import org.project.weatherdataproject.repository.WeatherRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.project.weatherdataproject.entity.WeatherData;
+import org.project.weatherdataproject.exceptions.CityDataAlreadyExists;
+import org.project.weatherdataproject.exceptions.IDWeatherDataExists;
+import org.project.weatherdataproject.exceptions.WeatherDataWithDateExists;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 @Service
-public interface WeatherService
-{
-   WeatherResponseDTO addWeatherData(Weather weather) ;
-   WeatherResponseDTO findWeatherDataByCity(String city) throws WeatherCityDataNotFoundException;
-   List<WeatherResponseDTO> getAllData();
-   WeatherResponseDTO updateWeatherData(String city,Weather weather);
-   boolean deleteWeatherData(String city);
+public interface WeatherService {
+    List<WeatherResponseDTO> getAllWeather();
 
+    WeatherResponseDTO getWeatherById(String id);
 
+    WeatherResponseDTO saveWeather(Weather weather) throws CityDataAlreadyExists;
+
+    void deleteWeather(String id);
+
+    WeatherResponseDTO addWeatherData(String city, WeatherData weatherData) throws WeatherDataWithDateExists, IDWeatherDataExists;
+
+    List<WeatherDataResponseDTO> findALlWeatherByCity(String city);
+
+    List<WeatherDataResponseDTO> findWeatherWithinRange(String city, Date startDate, Date endDate);
+
+    List<WeatherDataResponseDTO> filterSortTheData(String city, String sortBy, String order);
 }
