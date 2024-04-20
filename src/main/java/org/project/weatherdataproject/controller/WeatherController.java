@@ -76,4 +76,19 @@ public class WeatherController {
         List<WeatherDataResponseDTO> dataResponseDTOS= weatherService.filterSortTheData(city,sort_by,order);
         return ResponseEntity.ok(dataResponseDTOS);
     }
+
+    @GetMapping("/{city}/{days}")
+    public ResponseEntity<List<WeatherDataResponseDTO>> getKDaysWeatherData(@PathVariable String city,@PathVariable int days)
+    {
+        List<WeatherDataResponseDTO> dataResponseDTOS=weatherService.getWeatherDataOfLastKDays(city,days);
+        return ResponseEntity.ok(dataResponseDTOS);
+    }
+
+    @GetMapping("/forecast/{city}")
+    public ResponseEntity<String> doWeatherForecastByCity(@PathVariable String city)
+    {
+        String res=weatherService.predictWeather(city);
+        res="Predicted Weather for the "+city+" is :- "+res;
+        return ResponseEntity.ok(res);
+    }
 }

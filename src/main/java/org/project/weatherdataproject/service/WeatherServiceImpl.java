@@ -181,4 +181,55 @@ public class WeatherServiceImpl implements WeatherService {
         }
         return  weatherDataResponseDTOS;
     }
+
+    @Override
+    public List<WeatherDataResponseDTO> getWeatherDataOfLastKDays(String city, int days) {
+        Weather weather=weatherRepository.findWeatherByCity(city);
+        if(weather==null)
+        {
+            throw new WeatherCityDataNotPresent("Sorry this "+city+" not exists in DB");
+        }
+        List<WeatherData> weatherDataList=weather.getWeatherData();
+        if(weatherDataList.size()<days)
+        {
+            throw new WeatherCityDataNotFound("Weather data for "+days+"not available.In DB "+weatherDataList.size()+" days data is stored");
+        }
+        weatherDataList.sort(Comparator.comparing(WeatherData::getDate).reversed());
+
+        List<WeatherDataResponseDTO> ans=new ArrayList<>();
+        int k=0;
+        while(days-->0)
+        {
+            ans.add(WeatherEntityDTOMapper.convertWeatherDataToWeatherDataResponseDTO(weatherDataList.get(k)));
+            k++;
+        }
+        return ans;
+    }
+
+    @Override
+    public String predictWeather(String city) {
+        Weather weather= weatherRepository.findWeatherByCity(city);
+        if(weather==null)
+        {
+            throw new WeatherCityDataNotFound("Weather city not found");
+        }
+        List<WeatherData> weatherDataList=weather.getWeatherData();
+        Map<String,Integer> hm=new HashMap<>();
+        for(WeatherData weatherData:weatherDataList)
+        {
+            hm.put(weatherData.getDescription(),hm.getOrDefault(weatherData.getDescription(),0)+1);
+        }
+
+        String ans="";
+        int max=0;
+        for(String key:hm.keySet())
+        {
+            if(hm.get(key)>max)
+            {
+                max=hm.get(key);
+                ans=key;
+            }
+        }
+        return ans;
+    }
 }

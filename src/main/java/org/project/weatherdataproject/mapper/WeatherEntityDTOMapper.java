@@ -35,4 +35,30 @@ public class WeatherEntityDTOMapper {
         weatherDataResponseDTO.setDescription(weatherData.getDescription());
         return weatherDataResponseDTO;
     }
+
+    public static Weather convertWeatherResponseDTOToWeatherEntity(WeatherResponseDTO weatherResponseDTO)
+    {
+        Weather weather=new Weather();
+        weather.setId(weatherResponseDTO.getId());
+        weather.setCity(weatherResponseDTO.getCity());
+        List<WeatherData> weatherDataList=new ArrayList<>();
+        for(WeatherDataResponseDTO weatherDataResponseDTO:weatherResponseDTO.getWeatherDataResponseDTOS())
+        {
+            weatherDataList.add(convertWeatherDataResponseToWeatherDataEntity(weatherDataResponseDTO));
+        }
+        weather.setWeatherData(weatherDataList);
+        return weather;
+    }
+    public static WeatherData convertWeatherDataResponseToWeatherDataEntity(WeatherDataResponseDTO weatherDataResponseDTO)
+    {
+        WeatherData weatherData=new WeatherData();
+        weatherData.setId(weatherDataResponseDTO.getId());
+        weatherData.setTemperature(weatherDataResponseDTO.getTemperature());
+        weatherData.setHumidity(weatherDataResponseDTO.getHumidity());
+        weatherData.setWind(weatherDataResponseDTO.getWind());
+        weatherData.setDescription(weatherDataResponseDTO.getDescription());
+        weatherData.setDate(weatherDataResponseDTO.getDate());
+        return weatherData;
+
+    }
 }

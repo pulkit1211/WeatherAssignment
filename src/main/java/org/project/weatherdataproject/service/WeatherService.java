@@ -30,4 +30,8 @@ public interface WeatherService {
     List<WeatherDataResponseDTO> findWeatherWithinRange(String city, Date startDate, Date endDate);
 
     List<WeatherDataResponseDTO> filterSortTheData(String city, String sortBy, String order);
+
+    List<WeatherDataResponseDTO> getWeatherDataOfLastKDays(String city,int days);
+
+    String predictWeather(String city);
 }
