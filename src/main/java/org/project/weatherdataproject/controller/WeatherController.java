@@ -91,4 +91,12 @@ public class WeatherController {
         res="Predicted Weather for the "+city+" is :- "+res;
         return ResponseEntity.ok(res);
     }
+
+    @PatchMapping("/{city}/{id}/update")
+    public ResponseEntity<WeatherDataResponseDTO> updateWeatherDataByCity(@PathVariable String city,@PathVariable String id,@RequestBody WeatherData weatherData)
+
+    {
+        WeatherDataResponseDTO weatherDataResponseDTO= weatherService.updateWeatherData(city,id,weatherData);
+        return ResponseEntity.ok(weatherDataResponseDTO);
+    }
 }

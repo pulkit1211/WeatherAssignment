@@ -34,4 +34,6 @@ public interface WeatherService {
     List<WeatherDataResponseDTO> getWeatherDataOfLastKDays(String city,int days);
 
     String predictWeather(String city);
+
+    WeatherDataResponseDTO updateWeatherData(String city,String id,WeatherData weatherData);
 }

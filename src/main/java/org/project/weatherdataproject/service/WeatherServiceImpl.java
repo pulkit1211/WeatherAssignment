@@ -119,7 +119,7 @@ public class WeatherServiceImpl implements WeatherService {
         Weather weather=weatherRepository.findWeatherByCity(city);
         if(weather==null)
         {
-            throw new RuntimeException("No data found from this city");
+            throw new WeatherCityDataNotFound("No data found from this city");
         }
         List<WeatherData> weatherDataList=new ArrayList<>();
         for(WeatherData weatherData:weather.getWeatherData())
@@ -143,12 +143,12 @@ public class WeatherServiceImpl implements WeatherService {
         Weather weather=weatherRepository.findWeatherByCity(city);
         if(weather==null)
         {
-            throw  new RuntimeException("Data not found ");
+            throw  new WeatherCityDataNotFound("Data not found ");
         }
         List<WeatherData> data=weather.getWeatherData();
         if(data==null)
         {
-            throw  new RuntimeException("Weather data is empty");
+            throw  new WeatherCityDataNotFound("Weather data is empty");
         }
         if(sortBy!=null)
         {
@@ -232,4 +232,42 @@ public class WeatherServiceImpl implements WeatherService {
         }
         return ans;
     }
+
+    @Override
+    public WeatherDataResponseDTO updateWeatherData(String city, String id, WeatherData weatherData) {
+        // Retrieve the weather information for the specified city
+        Weather weather = weatherRepository.findWeatherByCity(city);
+        if (weather == null) {
+            throw new WeatherCityDataNotPresent("Weather data for city '" + city + "' does not exist.");
+        }
+
+        List<WeatherData> weatherDataList = weather.getWeatherData();
+        if (weatherDataList == null) {
+            throw new WeatherCityDataNotPresent("Weather data list for city '" + city + "' is empty.");
+        }
+
+        // Update the specific weather data by ID
+        WeatherData foundWeatherData = weatherDataList.stream()
+                .filter(wd -> wd.getId().equals(id))
+                .findFirst()
+                .orElseThrow(() -> new WeatherCityDataNotPresent("No weather data found with ID " + id + " for city " + city));
+
+        // Update fields if they are not null
+        if (weatherData.getWind() != null) foundWeatherData.setWind(weatherData.getWind());
+        if (weatherData.getTemperature() != null) foundWeatherData.setTemperature(weatherData.getTemperature());
+        if (weatherData.getHumidity() != null) foundWeatherData.setHumidity(weatherData.getHumidity());
+        if (weatherData.getDescription() != null) foundWeatherData.setDescription(weatherData.getDescription());
+
+        // Disallow date updates
+        if (weatherData.getDate() != null) {
+            throw new UnsupportedOperationException("Updating the date of weather data is not allowed.");
+        }
+
+        // Save the updated weather entity
+        weatherRepository.save(weather);
+
+        // Return the updated data
+        return WeatherEntityDTOMapper.convertWeatherDataToWeatherDataResponseDTO(foundWeatherData);
+    }
+
 }
