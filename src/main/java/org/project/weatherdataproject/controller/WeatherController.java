@@ -1,5 +1,6 @@
 package org.project.weatherdataproject.controller;
 
+import jakarta.validation.Valid;
 import org.project.weatherdataproject.Dtos.WeatherDataResponseDTO;
 import org.project.weatherdataproject.Dtos.WeatherResponseDTO;
 import org.project.weatherdataproject.entity.Weather;
@@ -35,7 +36,7 @@ public class WeatherController {
     }
 
     @PostMapping
-    public ResponseEntity<WeatherResponseDTO> saveWeather(@RequestBody Weather weather)
+    public ResponseEntity<WeatherResponseDTO> saveWeather(@Valid @RequestBody Weather weather)
     {
 
         WeatherResponseDTO weatherResponseDTO= weatherService.saveWeather(weather);
@@ -49,7 +50,7 @@ public class WeatherController {
     }
 
     @GetMapping("/{city}/weatherdata")
-    public ResponseEntity<WeatherResponseDTO> addWeatherData(@PathVariable String city, @RequestBody WeatherData weatherData) {
+    public ResponseEntity<WeatherResponseDTO> addWeatherData(@Valid @PathVariable String city, @RequestBody WeatherData weatherData) {
         WeatherResponseDTO weatherResponseDTO= weatherService.addWeatherData(city, weatherData);
         return ResponseEntity.ok(weatherResponseDTO);
     }
